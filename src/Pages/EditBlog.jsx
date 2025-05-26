@@ -2,17 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
+const emptyLists = {
+  whyImportant: [],
+  types: [],
+  pros: [],
+  cons: [],
+  useCases: [],
+  bestPractices: [],
+  tools: [],
+};
+
 const EditBlog = ({ isNew }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [blog, setBlog] = useState(isNew ? {
     title: '',
+    slug: '',
     summary: '',
-    content: '',
-    image: '',
+    date: '',
     author: '',
     category: '',
-    style: {},
+    image: '',
+    content: '',
+    lists: { ...emptyLists },
   } : null);
 
   useEffect(() => {
@@ -21,7 +33,10 @@ const EditBlog = ({ isNew }) => {
       api.get(`/blogs/${id}`)
         .then(res => {
           if (res.data) {
-            setBlog(res.data);
+            setBlog({
+              ...res.data,
+              lists: { ...emptyLists, ...res.data.lists }, // ensure all lists keys exist
+            });
           } else {
             alert('Blog not found');
             navigate('/dashboard/blogs');
@@ -42,48 +57,43 @@ const EditBlog = ({ isNew }) => {
     }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (isNew) {
+  // For handling lists fields (comma-separated input)
+  const handleListChange = (e) => {
+    const { name, value } = e.target;
+    setBlog((prev) => ({
+      ...prev,
+      lists: {
+        ...prev.lists,
+        [name]: value.split(',').map((item) => item.trim()).filter(Boolean),
+      },
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const blogToSend = {
+      title: blog.title,
+      slug: blog.slug,
+      summary: blog.summary,
+      date: blog.date,
+      author: blog.author,
+      category: blog.category,
+      image: blog.image,
+      content: blog.content,
+      lists: blog.lists,
+    };
     try {
-      const blogToSend = {
-        title: blog.title,
-        summary: blog.summary,
-        content: blog.content,
-        image: blog.image,
-        author: blog.author,
-        category: blog.category,
-        // date: blog.date, // optional
-        style: blog.style || {},
-      };
-      console.log('Submitting blog:', blogToSend);
-      await api.post('/blogs', blogToSend);
+      if (isNew) {
+        await api.post('/blogs', blogToSend);
+      } else {
+        await api.put(`/blogs/${blog._id}`, blogToSend);
+      }
       navigate('/dashboard/blogs');
     } catch (error) {
-      alert('Failed to add blog: ' + (error.response?.data?.message || error.message));
+      alert('Failed to save blog: ' + (error.response?.data?.message || error.message));
       console.error(error.response?.data || error);
     }
-  } else {
-        try {
-      const blogToSend = {
-        title: blog.title,
-        summary: blog.summary,
-        content: blog.content,
-        image: blog.image,
-        author: blog.author,
-        category: blog.category,
-        style: blog.style || {},
-      };
-      await api.put(`/blogs/${blog._id}`, blogToSend);
-      navigate('/dashboard/blogs');
-    } catch (error) {
-      alert('Failed to update blog: ' + (error.response?.data?.message || error.message));
-      console.error(error.response?.data || error);
-    }
-    // Update logic
-    console.log('Updated blog:', blog);
-  }
-};
+  };
 
   if (!blog) return null;
 
@@ -156,7 +166,79 @@ const handleSubmit = async (e) => {
           placeholder="Content"
           rows={6}
         />
-        {/* Optionally, add fields for lists if needed */}
+
+        {/* Lists fields as comma-separated values */}
+        <div>
+          <label className="block font-semibold">Why Important (comma separated)</label>
+          <input
+            type="text"
+            name="whyImportant"
+            value={blog.lists.whyImportant.join(', ')}
+            onChange={handleListChange}
+            className="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Types (comma separated)</label>
+          <input
+            type="text"
+            name="types"
+            value={blog.lists.types.join(', ')}
+            onChange={handleListChange}
+            className="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Pros (comma separated)</label>
+          <input
+            type="text"
+            name="pros"
+            value={blog.lists.pros.join(', ')}
+            onChange={handleListChange}
+            className="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Cons (comma separated)</label>
+          <input
+            type="text"
+            name="cons"
+            value={blog.lists.cons.join(', ')}
+            onChange={handleListChange}
+            className="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Use Cases (comma separated)</label>
+          <input
+            type="text"
+            name="useCases"
+            value={blog.lists.useCases.join(', ')}
+            onChange={handleListChange}
+            className="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Best Practices (comma separated)</label>
+          <input
+            type="text"
+            name="bestPractices"
+            value={blog.lists.bestPractices.join(', ')}
+            onChange={handleListChange}
+            className="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Tools (comma separated)</label>
+          <input
+            type="text"
+            name="tools"
+            value={blog.lists.tools.join(', ')}
+            onChange={handleListChange}
+            className="w-full border px-4 py-2 rounded"
+          />
+        </div>
+
         <div className="flex justify-end gap-2">
           <button
             type="button"
