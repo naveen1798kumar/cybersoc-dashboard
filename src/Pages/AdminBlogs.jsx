@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/axios.js'; // Updated path for Axios instance
+import api from '../api/axios.js';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
+
+const truncate = (str, n) => (str && str.length > n ? str.slice(0, n) + '...' : str);
 
 const AdminBlogs = () => {
   const [blogs, setBlogs] = useState([]);
@@ -65,26 +67,52 @@ const AdminBlogs = () => {
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {blogs.map((blog) => (
-          <div key={blog._id} className="bg-white p-4 rounded shadow">
-            <img src={blog.image || null} alt={blog.title} className="h-40 w-full object-cover rounded" />
-            <h2 className="text-xl font-semibold mt-2">{blog.title}</h2>
-            <p className="text-sm text-gray-500">{blog.date} by {blog.author}</p>
-            <p className="text-gray-600 mt-1">{blog.summary}</p>
-            <div className="flex justify-end mt-4 space-x-2">
-              <button
-                onClick={() => navigate(`/dashboard/blogs/edit/${blog._id}`)}
-                className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                <FaEdit size={16} />
-              </button>
-              <button
-                onClick={() => handleDelete(blog._id)}
-                className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                <FaTrash size={16} />
-              </button>
+          <article
+            key={blog._id}
+            className="transition-transform duration-300 hover:scale-[1.03] group"
+          >
+            <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
+              <div className="relative aspect-[16/9] overflow-hidden">
+                <img
+                  src={blog.image || '/placeholder.jpg'}
+                  alt={blog.title}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                />
+                <span className="absolute top-3 left-3 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
+                  {blog.category}
+                </span>
+              </div>
+              <div className="p-5 space-y-2">
+                <h2 className="text-lg font-bold text-gray-900 leading-snug line-clamp-2">
+                  {truncate(blog.title, 50)}
+                </h2>
+                <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                  {truncate(blog.summary, 120)}
+                </p>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-xs text-gray-500">
+                    {blog.date} {blog.author && `by ${blog.author}`}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => navigate(`/dashboard/blogs/edit/${blog._id}`)}
+                      className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      title="Edit"
+                    >
+                      <FaEdit size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(blog._id)}
+                      className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                      title="Delete"
+                    >
+                      <FaTrash size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
 

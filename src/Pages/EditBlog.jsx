@@ -1,51 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import ReactQuill from 'react-quill';
+import DatePicker from 'react-datepicker';
+import 'react-quill/dist/quill.snow.css';
+import 'react-datepicker/dist/react-datepicker.css';
 
-const emptyLists = {
-  whyImportant: [],
-  types: [],
-  pros: [],
-  cons: [],
-  useCases: [],
-  bestPractices: [],
-  tools: [],
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    ['blockquote', 'code-block'],
+    ['link', 'image'],
+    ['clean']
+  ]
 };
+const quillFormats = [
+  'header', 'bold', 'italic', 'underline', 'strike', 'list', 'bullet',
+  'blockquote', 'code-block', 'link', 'image'
+];
 
 const EditBlog = ({ isNew }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [blog, setBlog] = useState(isNew ? {
+  const [blog, setBlog] = useState({
     title: '',
     slug: '',
     summary: '',
-    date: '',
+    date: new Date(),
     author: '',
     category: '',
     image: '',
     content: '',
-    lists: { ...emptyLists },
-  } : null);
+  });
+  const [imageFile, setImageFile] = useState(null);
+  const [loading, setLoading] = useState(!isNew);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isNew) {
-      // Fetch the blog from the API using the id
+      setLoading(true);
       api.get(`/blogs/${id}`)
         .then(res => {
-          if (res.data) {
-            setBlog({
-              ...res.data,
-              lists: { ...emptyLists, ...res.data.lists }, // ensure all lists keys exist
-            });
-          } else {
-            alert('Blog not found');
+          if (res.data) setBlog({ ...res.data, date: new Date(res.data.date) });
+          else {
+            setError('Blog not found');
             navigate('/dashboard/blogs');
           }
         })
         .catch(() => {
-          alert('Blog not found');
+          setError('Blog not found');
           navigate('/dashboard/blogs');
-        });
+        })
+        .finally(() => setLoading(false));
     }
   }, [id, isNew, navigate]);
 
@@ -57,32 +65,41 @@ const EditBlog = ({ isNew }) => {
     }));
   };
 
-  // For handling lists fields (comma-separated input)
-  const handleListChange = (e) => {
-    const { name, value } = e.target;
+  const handleContentChange = (value) => {
     setBlog((prev) => ({
       ...prev,
-      lists: {
-        ...prev.lists,
-        [name]: value.split(',').map((item) => item.trim()).filter(Boolean),
-      },
+      content: value,
     }));
+  };
+
+  const handleDateChange = (date) => {
+    setBlog((prev) => ({
+      ...prev,
+      date,
+    }));
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    setImageFile(file);
+    // Example: upload to backend or cloud and get URL
+    // const url = await uploadImage(file);
+    // setBlog((prev) => ({ ...prev, image: url }));
+    // For now, just preview locally:
+    setBlog((prev) => ({ ...prev, image: URL.createObjectURL(file) }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const blogToSend = {
-      title: blog.title,
-      slug: blog.slug,
-      summary: blog.summary,
-      date: blog.date,
-      author: blog.author,
-      category: blog.category,
-      image: blog.image,
-      content: blog.content,
-      lists: blog.lists,
-    };
+    setError('');
+    if (!blog.title || !blog.slug || !blog.content) {
+      setError('Title, slug, and content are required.');
+      return;
+    }
     try {
+      // If you want to upload the image to your backend, do it here and set blog.image to the returned URL
+      // Example: if (imageFile) { ...upload logic... }
+      const blogToSend = { ...blog, date: blog.date.toISOString() };
       if (isNew) {
         await api.post('/blogs', blogToSend);
       } else {
@@ -90,12 +107,12 @@ const EditBlog = ({ isNew }) => {
       }
       navigate('/dashboard/blogs');
     } catch (error) {
-      alert('Failed to save blog: ' + (error.response?.data?.message || error.message));
+      setError('Failed to save blog: ' + (error.response?.data?.message || error.message));
       console.error(error.response?.data || error);
     }
   };
 
-  if (!blog) return null;
+  if (loading) return <div className="p-6 text-center">Loading...</div>;
 
   return (
     <div className="p-6">
@@ -103,6 +120,7 @@ const EditBlog = ({ isNew }) => {
         {isNew ? 'Add New Blog' : `Edit Blog: ${blog.title}`}
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl mx-auto">
+        {error && <div className="text-red-600 font-semibold">{error}</div>}
         <input
           type="text"
           name="title"
@@ -110,6 +128,7 @@ const EditBlog = ({ isNew }) => {
           onChange={handleChange}
           className="w-full border px-4 py-2 rounded"
           placeholder="Title"
+          required
         />
         <input
           type="text"
@@ -117,23 +136,26 @@ const EditBlog = ({ isNew }) => {
           value={blog.slug}
           onChange={handleChange}
           className="w-full border px-4 py-2 rounded"
-          placeholder="Slug"
+          placeholder="Slug (unique, for URL)"
+          required
         />
         <textarea
           name="summary"
           value={blog.summary}
           onChange={handleChange}
           className="w-full border px-4 py-2 rounded"
-          placeholder="Summary"
+          placeholder="Short summary (optional)"
         />
-        <input
-          type="text"
-          name="date"
-          value={blog.date}
-          onChange={handleChange}
-          className="w-full border px-4 py-2 rounded"
-          placeholder="Date"
-        />
+        <div>
+          <label className="block font-semibold mb-1">Date & Time</label>
+          <DatePicker
+            selected={blog.date}
+            onChange={handleDateChange}
+            showTimeSelect
+            dateFormat="Pp"
+            className="w-full border px-4 py-2 rounded"
+          />
+        </div>
         <input
           type="text"
           name="author"
@@ -150,95 +172,28 @@ const EditBlog = ({ isNew }) => {
           className="w-full border px-4 py-2 rounded"
           placeholder="Category"
         />
-        <input
-          type="text"
-          name="image"
-          value={blog.image}
-          onChange={handleChange}
-          className="w-full border px-4 py-2 rounded"
-          placeholder="Image URL or import"
-        />
-        <textarea
-          name="content"
+        <div>
+          <label className="block font-semibold mb-1">Main Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full border px-4 py-2 rounded"
+          />
+          {blog.image && (
+            <img src={blog.image} alt="Preview" className="mt-2 rounded max-h-48" />
+          )}
+        </div>
+        <label className="block font-semibold">Article Content</label>
+        <ReactQuill
+          theme="snow"
           value={blog.content}
-          onChange={handleChange}
-          className="w-full border px-4 py-2 rounded"
-          placeholder="Content"
-          rows={6}
+          onChange={handleContentChange}
+          modules={quillModules}
+          formats={quillFormats}
+          className="bg-white"
+          style={{ minHeight: 300 }}
         />
-
-        {/* Lists fields as comma-separated values */}
-        <div>
-          <label className="block font-semibold">Why Important (comma separated)</label>
-          <input
-            type="text"
-            name="whyImportant"
-            value={blog.lists.whyImportant.join(', ')}
-            onChange={handleListChange}
-            className="w-full border px-4 py-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block font-semibold">Types (comma separated)</label>
-          <input
-            type="text"
-            name="types"
-            value={blog.lists.types.join(', ')}
-            onChange={handleListChange}
-            className="w-full border px-4 py-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block font-semibold">Pros (comma separated)</label>
-          <input
-            type="text"
-            name="pros"
-            value={blog.lists.pros.join(', ')}
-            onChange={handleListChange}
-            className="w-full border px-4 py-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block font-semibold">Cons (comma separated)</label>
-          <input
-            type="text"
-            name="cons"
-            value={blog.lists.cons.join(', ')}
-            onChange={handleListChange}
-            className="w-full border px-4 py-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block font-semibold">Use Cases (comma separated)</label>
-          <input
-            type="text"
-            name="useCases"
-            value={blog.lists.useCases.join(', ')}
-            onChange={handleListChange}
-            className="w-full border px-4 py-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block font-semibold">Best Practices (comma separated)</label>
-          <input
-            type="text"
-            name="bestPractices"
-            value={blog.lists.bestPractices.join(', ')}
-            onChange={handleListChange}
-            className="w-full border px-4 py-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block font-semibold">Tools (comma separated)</label>
-          <input
-            type="text"
-            name="tools"
-            value={blog.lists.tools.join(', ')}
-            onChange={handleListChange}
-            className="w-full border px-4 py-2 rounded"
-          />
-        </div>
-
         <div className="flex justify-end gap-2">
           <button
             type="button"
