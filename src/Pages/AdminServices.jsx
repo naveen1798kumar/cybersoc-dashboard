@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const API_BASE = '/api';
 
@@ -14,7 +15,6 @@ const AdminServices = () => {
   // Fetch categories
   useEffect(() => {
     axios.get(`${API_BASE}/categories`).then(res => {
-      // Defensive: always set an array
       setCategories(Array.isArray(res.data) ? res.data : res.data.categories || []);
     });
   }, []);
@@ -114,7 +114,7 @@ const AdminServices = () => {
       </section>
 
       {/* --- Service Section --- */}
-      {selectedCategory && (
+      {selectedCategory ? (
         <section>
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-xl font-semibold">
@@ -134,7 +134,9 @@ const AdminServices = () => {
                   className={`cursor-pointer ${selectedService && selectedService._id === srv._id ? 'font-bold text-green-700' : ''}`}
                   onClick={() => { setSelectedService(srv); setShowServiceForm(false); }}
                 >
-                  {srv.title}
+                  <Link to={`/dashboard/services/${srv._id}`} className="text-blue-700 hover:underline">
+                    {srv.title}
+                  </Link>
                 </span>
                 <div className="flex gap-2">
                   <button
@@ -157,6 +159,10 @@ const AdminServices = () => {
             />
           )}
         </section>
+      ) : (
+        <div className="text-gray-500 text-center mt-8">
+          <p>Please select or create a category to manage its services.</p>
+        </div>
       )}
     </div>
   );
@@ -164,7 +170,6 @@ const AdminServices = () => {
 
 // --- Category Form ---
 function CategoryForm({ initialData = {}, onSubmit, onCancel }) {
-  // Ensure initialData is always an object
   const safeData = initialData || {};
   const [form, setForm] = useState({
     title: safeData.title || '',
@@ -209,7 +214,7 @@ function CategoryForm({ initialData = {}, onSubmit, onCancel }) {
   );
 }
 
-// --- Service Form ---
+// --- Service Form with dynamic fields ---
 function ServiceForm({ initialData, onSubmit, onCancel }) {
   const data = initialData || {};
   const [form, setForm] = useState({
@@ -221,8 +226,47 @@ function ServiceForm({ initialData, onSubmit, onCancel }) {
     features: data.features || [],
     faqs: data.faqs || [],
   });
+  const [uploading, setUploading] = useState(false);
+
+  // Handlers for dynamic arrays
+  const handleArrayChange = (field, idx, key, value) => {
+    setForm(prev => {
+      const arr = [...prev[field]];
+      arr[idx][key] = value;
+      return { ...prev, [field]: arr };
+    });
+  };
+  const handleArrayAdd = (field, emptyObj) => {
+    setForm(prev => ({ ...prev, [field]: [...prev[field], emptyObj] }));
+  };
+  const handleArrayRemove = (field, idx) => {
+    setForm(prev => {
+      const arr = [...prev[field]];
+      arr.splice(idx, 1);
+      return { ...prev, [field]: arr };
+    });
+  };
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      const res = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      setForm(prev => ({ ...prev, image: data.url }));
+    } catch (err) {
+      alert('Image upload failed');
+    }
+    setUploading(false);
+  };
 
   return (
     <form
@@ -251,8 +295,111 @@ function ServiceForm({ initialData, onSubmit, onCancel }) {
         placeholder="Image URL"
         className="w-full border px-3 py-2 rounded"
       />
-      {/* Add UI for sections, benefits, features, faqs here if needed */}
-      <div className="flex gap-2 justify-end">
+      <div>
+        <label className="font-semibold">Image</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="block mb-2"
+        />
+        {uploading && <span className="text-blue-600">Uploading...</span>}
+        {form.image && (
+          <img src={form.image} alt="Preview" className="h-24 mt-2 rounded shadow" />
+        )}
+      </div>
+
+      {/* Sections */}
+      <div>
+        <label className="font-semibold">Sections</label>
+        {form.sections.map((section, idx) => (
+          <div key={idx} className="flex gap-2 mb-2">
+            <input
+              value={section.title}
+              onChange={e => handleArrayChange('sections', idx, 'title', e.target.value)}
+              placeholder="Section Title"
+              className="border px-2 py-1 rounded w-1/3"
+            />
+            <input
+              value={section.content}
+              onChange={e => handleArrayChange('sections', idx, 'content', e.target.value)}
+              placeholder="Section Content"
+              className="border px-2 py-1 rounded w-2/3"
+            />
+            <button type="button" onClick={() => handleArrayRemove('sections', idx)} className="text-red-600">Remove</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => handleArrayAdd('sections', { title: '', content: '' })} className="text-blue-600">+ Add Section</button>
+      </div>
+
+      {/* Benefits */}
+      <div>
+        <label className="font-semibold">Benefits</label>
+        {form.benefits.map((benefit, idx) => (
+          <div key={idx} className="flex gap-2 mb-2">
+            <input
+              value={benefit}
+              onChange={e => {
+                const arr = [...form.benefits];
+                arr[idx] = e.target.value;
+                setForm(prev => ({ ...prev, benefits: arr }));
+              }}
+              placeholder="Benefit"
+              className="border px-2 py-1 rounded w-5/6"
+            />
+            <button type="button" onClick={() => handleArrayRemove('benefits', idx)} className="text-red-600">Remove</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => handleArrayAdd('benefits', '')} className="text-blue-600">+ Add Benefit</button>
+      </div>
+
+      {/* Features */}
+      <div>
+        <label className="font-semibold">Features</label>
+        {form.features.map((feature, idx) => (
+          <div key={idx} className="flex gap-2 mb-2">
+            <input
+              value={feature.title}
+              onChange={e => handleArrayChange('features', idx, 'title', e.target.value)}
+              placeholder="Feature Title"
+              className="border px-2 py-1 rounded w-1/3"
+            />
+            <input
+              value={feature.description}
+              onChange={e => handleArrayChange('features', idx, 'description', e.target.value)}
+              placeholder="Feature Description"
+              className="border px-2 py-1 rounded w-2/3"
+            />
+            <button type="button" onClick={() => handleArrayRemove('features', idx)} className="text-red-600">Remove</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => handleArrayAdd('features', { title: '', description: '' })} className="text-blue-600">+ Add Feature</button>
+      </div>
+
+      {/* FAQs */}
+      <div>
+        <label className="font-semibold">FAQs</label>
+        {form.faqs.map((faq, idx) => (
+          <div key={idx} className="flex gap-2 mb-2">
+            <input
+              value={faq.question}
+              onChange={e => handleArrayChange('faqs', idx, 'question', e.target.value)}
+              placeholder="FAQ Question"
+              className="border px-2 py-1 rounded w-1/2"
+            />
+            <input
+              value={faq.answer}
+              onChange={e => handleArrayChange('faqs', idx, 'answer', e.target.value)}
+              placeholder="FAQ Answer"
+              className="border px-2 py-1 rounded w-1/2"
+            />
+            <button type="button" onClick={() => handleArrayRemove('faqs', idx)} className="text-red-600">Remove</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => handleArrayAdd('faqs', { question: '', answer: '' })} className="text-blue-600">+ Add FAQ</button>
+      </div>
+
+      <div className="flex gap-2 justify-end mt-4">
         <button type="button" onClick={onCancel} className="px-4 py-2 border rounded">Cancel</button>
         <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">Save</button>
       </div>

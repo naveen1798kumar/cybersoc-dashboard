@@ -18,6 +18,8 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import ServiceList from './Pages/ServiceList';
+import ServiceDetail from './Pages/ServiceDetail';
 
 function App() {
   // const [loading, setLoading] = useState(true);
@@ -37,6 +39,7 @@ function App() {
         <Route path="/dashboard" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="services" element={<AdminServices />} />
+          <Route path="services/:id" element={<ServiceDetail />} />
           <Route path="services/edit/:serviceId" element={<EditServicePage />} />
           <Route path="blogs" element={<AdminBlogs />} />
           <Route path="blogs/add" element={<EditBlog isNew={true} />} />
