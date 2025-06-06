@@ -13,7 +13,7 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('isAdmin');
-    navigate('/admin');
+    navigate('/');
   };
 
   const cards = [

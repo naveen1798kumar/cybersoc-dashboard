@@ -13,7 +13,6 @@ import AdminSettings from './pages/AdminSettings';
 import EditBlog from './Pages/EditBlog';
 import EditServicePage from './pages/EditServicePage';
 
-
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import AOS from 'aos';
@@ -21,18 +20,24 @@ import 'aos/dist/aos.css';
 import ServiceList from './Pages/ServiceList';
 import ServiceDetail from './Pages/ServiceDetail';
 
-function App() {
-  // const [loading, setLoading] = useState(true);
+// 
+import 'quill/dist/quill.snow.css'
+import {Toaster} from 'react-hot-toast'
+import { useAppContext } from './context/AppContext'
 
+function App() {
+  const {token} = useAppContext()
+  // const [loading, setLoading] = useState(true);
   // useEffect(() => {
   //   AOS.init({ duration: 1000, once: true });
   //   setTimeout(() => setLoading(false), 1000);
   // }, []);
-
   // if (loading) return <Loading />;
 
   return (
-    <Router>
+    <div>
+      <Toaster />
+
       <Routes>
         {/* Admin Routes */}
         <Route path="/" element={<AdminLogin />} />
@@ -48,7 +53,8 @@ function App() {
           <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Routes>
-    </Router>
+
+    </div>
   );
 }
 
