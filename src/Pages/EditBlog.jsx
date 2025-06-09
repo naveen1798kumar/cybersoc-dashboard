@@ -18,6 +18,8 @@ const EditBlog = () => {
 
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [quillReady, setQuillReady] = useState(false)
+
   const [title, setTitle] = useState('')
   const [subTitle, setSubTitle] = useState('')
   const [category, setCategory] = useState('')
@@ -28,31 +30,46 @@ const EditBlog = () => {
   // Initialize Quill
   useEffect(() => {
     if (!quillRef.current && editorRef.current) {
-      quillRef.current = new Quill(editorRef.current, { theme: 'snow' })
+      quillRef.current = new Quill(editorRef.current, { theme: 'snow', modules: {
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'image'],
+            ['clean'],
+          ],
+        } })
+      setQuillReady(true)
     }
   }, [])
 
   // Fetch blog if editing
   useEffect(() => {
-    if (id && quillRef.current) fetchBlogDetails()
-  }, [id, quillRef.current])
+    if (id && quillReady) fetchBlogDetails()
+  }, [id, quillReady])
 
   const fetchBlogDetails = async () => {
     setIsLoading(true)
     try {
-      const { data } = await axios.get(`/api/blog/${id}`)
+      const { data } = await axios.get(`/blogs/${id}`)
       if (data.success) {
         const blog = data.blog
-        setTitle(blog.title)
-        setSubTitle(blog.subTitle)
-        setCategory(blog.category)
-        setIsPublished(blog.isPublished)
-        setExistingImageURL(blog.image)
-        quillRef.current.root.innerHTML = blog.description || ''
+        setTitle(blog.title || '')
+        setSubTitle(blog.subTitle || '')
+        setCategory(blog.category || '')
+        setIsPublished(blog.isPublished || false)
+
+        setExistingImageURL(blog.image || '')
+        if (quillRef.current && quillRef.current.root) {
+          quillRef.current.root.innerHTML = blog.description || ''
+        }
+
       } else {
-        toast.error(data.message)
+        toast.error(data.message || 'Failed to load blog details.')
       }
     } catch (error) {
+      console.log('Fetch Error', error);      
       toast.error('Error fetching blog.')
     } finally {
       setIsLoading(false)
@@ -64,42 +81,68 @@ const EditBlog = () => {
     setIsSaving(true)
 
     try {
+      if (!title.trim()) {
+        toast.error('Title cannot be empty.')
+        setIsSaving(false)
+        return
+      }
+
+    if (!category) {
+      toast.error('Please select a category.');
+      setIsSaving(false);
+      return;
+    }
 
       const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
 
-      const blog = {
-        title,
-        subTitle,
-        description: quillRef.current.root.innerHTML,
-        category,
-        isPublished,
-        author: "Admin",
-        slug
-      }
+    const formData = new FormData()
+  formData.append('title', title);
+  formData.append('subTitle', subTitle);
+  formData.append('description', quillRef.current.root.innerHTML);
+  formData.append('category', category);
+  formData.append('slug', slug);
+  formData.append('isPublished', isPublished);
+  formData.append('author', 'Admin');
 
-      const formData = new FormData()
-      formData.append('blog', JSON.stringify(blog))
-      if (image) formData.append('image', image)
+    if (image) formData.append('image', image); 
+    // if (image) {
+    //   formData.append('image', image)
+    // }
 
-      const url = id ? `/blogs/update/${id}` : '/blogs/add'
-      const method = id ? 'put' : 'post'
-      const { data } = await axios[method](url, formData)
+    const url = id ? `/blogs/update/${id}` : '/blogs/add'
+    const method = id ? 'put' : 'post'
 
-      if (data.success) {
-        toast.success(data.message)
-        navigate('/dashboard/blogs')
-      } else {
-        toast.error(data.message)
-      }
-    } catch (error) {
-      toast.error('Failed to save blog.')
-    } finally {
-      setIsSaving(false)
+    const { data } = await axios[method](url, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+
+    if (data?.success) {
+      toast.success(data.message || 'Blog saved successfully.')
+      navigate('/dashboard/blogs')
+    } else {
+      toast.error(data.message || 'Failed to save blog.')
     }
+  } catch (error) {
+    console.error('Save blog error:', error)
+    toast.error(error.response?.data?.message || 'Failed to save blog.')
+  } finally {
+    setIsSaving(false)
   }
+}
+
+  // Clean up object URLs created for preview
+  useEffect(() => {
+    let url
+    if (image) {
+      url = URL.createObjectURL(image)
+    }
+    return () => {
+      if (url) URL.revokeObjectURL(url)
+    }
+  }, [image])
 
   return (
     <form onSubmit={handleSubmit} className="flex-1 bg-blue-50/50 text-gray-600 h-full">

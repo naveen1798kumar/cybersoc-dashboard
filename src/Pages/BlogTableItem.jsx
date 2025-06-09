@@ -45,7 +45,17 @@ const BlogTableItem = ({ blog, index, fetchBlogs }) => {
   return (
     <tr className="border-b text-sm text-gray-700">
       <td className="px-4 py-3">{index}</td>
-      <td className="px-4 py-3">{title}</td>
+      
+      <td className="px-4 py-3">
+  <button
+    onClick={() => navigate(`/blog/${blog._id}`)}
+    className="text-blue-600 underline hover:text-blue-800"
+  >
+    {title}
+  </button>
+</td>
+
+
       <td className="px-4 py-3">{BlogDate.toDateString()}</td>
       <td className="px-4 py-3">
         <span className={`${blog.isPublished ? 'text-green-600' : 'text-orange-600'}`}>

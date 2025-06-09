@@ -13,6 +13,8 @@ import AdminSettings from './pages/AdminSettings';
 import EditBlog from './Pages/EditBlog';
 import EditServicePage from './pages/EditServicePage';
 
+import BlogView from './Pages/BlogView'; 
+
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import AOS from 'aos';
@@ -47,6 +49,8 @@ function App() {
           <Route path="services/:id" element={<ServiceDetail />} />
           <Route path="services/edit/:serviceId" element={<EditServicePage />} />
           <Route path="blogs" element={<AdminBlogs />} />
+          <Route path="blogs/:id" element={<BlogView />} />
+
           <Route path="blogs/add" element={<EditBlog isNew={true} />} />
           <Route path="blogs/edit/:id" element={<EditBlog />} />
           <Route path="products" element={<AdminProducts />} />
