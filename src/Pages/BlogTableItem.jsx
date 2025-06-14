@@ -43,46 +43,59 @@ const BlogTableItem = ({ blog, index, fetchBlogs }) => {
   };
 
   return (
-    <tr className="border-b text-sm text-gray-700">
-      <td className="px-4 py-3">{index}</td>
-      
-      <td className="px-4 py-3">
-  <button
-    onClick={() => navigate(`/blog/${blog._id}`)}
-    className="text-blue-600 underline hover:text-blue-800"
-  >
-    {title}
-  </button>
-</td>
+<tr className="border-b hover:bg-gray-50 transition duration-200">
+  <td className="px-6 py-4 italic">{index}</td>
 
+  <td className="px-6 py-4">
+    <button
+      onClick={() => navigate(`${blog._id}`)}
+      className="text-blue-600 font-medium hover:text-blue-800 hover:underline cursor-pointer"
+    >
+      {title}
+    </button>
+  </td>
 
-      <td className="px-4 py-3">{BlogDate.toDateString()}</td>
-      <td className="px-4 py-3">
-        <span className={`${blog.isPublished ? 'text-green-600' : 'text-orange-600'}`}>
-          {blog.isPublished ? 'Published' : 'Unpublished'}
-        </span>
-      </td>
-      <td className="px-4 py-3 flex gap-3">
-        <button
-          onClick={togglePublish}
-          className="text-xs border px-2 py-1 rounded hover:bg-gray-100"
-        >
-          {blog.isPublished ? 'Unpublish' : 'Publish'}
-        </button>
-        <button
-          onClick={() => navigate(`/dashboard/blogs/edit/${blog._id}`)}
-          className="text-xs border px-2 py-1 rounded hover:bg-blue-100"
-        >
-          Edit
-        </button>
-        <img
-          src={assets.cross_icon}
-          alt="Delete"
-          className="w-6 cursor-pointer hover:scale-110"
-          onClick={deleteBlog}
-        />
-      </td>
-    </tr>
+  <td className="px-6 py-4">{BlogDate.toDateString()}</td>
+
+  <td className="px-6 py-4">
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium ${
+        blog.isPublished ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+      }`}
+    >
+      {blog.isPublished ? 'Published' : 'Unpublished'}
+    </span>
+  </td>
+
+  <td className="px-6 py-4 flex gap-3 items-center flex-wrap">
+    <button
+      onClick={togglePublish}
+      className={`text-xs px-3 py-1 rounded-full border ${
+        blog.isPublished
+          ? 'bg-white text-orange-600 border-orange-400 hover:bg-orange-100'
+          : 'bg-white text-green-600 border-green-400 hover:bg-green-100'
+      } transition`}
+    >
+      {blog.isPublished ? 'Unpublish' : 'Publish'}
+    </button>
+
+    <button
+      onClick={() => navigate(`/dashboard/blogs/edit/${blog._id}`)}
+      className="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition"
+    >
+      Edit
+    </button>
+
+    <img
+      src={assets.cross_icon}
+      alt="Delete"
+      title="Delete Blog"
+      className="w-5 cursor-pointer hover:scale-110 transition"
+      onClick={deleteBlog}
+    />
+  </td>
+</tr>
+
   );
 };
 

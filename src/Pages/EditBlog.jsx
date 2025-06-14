@@ -145,89 +145,109 @@ const EditBlog = () => {
   }, [image])
 
   return (
-    <form onSubmit={handleSubmit} className="flex-1 bg-blue-50/50 text-gray-600 h-full">
-      <div className="bg-white w-full max-w-3xl p-4 md:p-10 sm:m-10 shadow rounded">
-        <h2 className="text-lg font-semibold mb-4">{id ? 'Edit Blog' : 'Add New Blog'}</h2>
+<form onSubmit={handleSubmit} className="flex-1 bg-blue-50/50 text-gray-700 min-h-screen py-10 px-4">
+  <div className="bg-white w-full max-w-3xl mx-auto p-6 md:p-10 rounded-xl shadow-lg space-y-6">
+    <h2 className="text-2xl font-semibold text-gray-800">{id ? 'Edit Blog' : 'Add New Blog'}</h2>
 
-        <p>Upload Thumbnail</p>
-        <label htmlFor="image">
+    {/* Thumbnail Upload */}
+    <div>
+      <label className="block text-sm font-medium mb-1">Upload Thumbnail</label>
+      <div className="w-32 h-32 rounded-2xl border border-dashed border-gray-300 flex items-center justify-center overflow-hidden cursor-pointer bg-gray-50 hover:border-blue-400 transition">
+        <label htmlFor="image" className="cursor-pointer w-full h-full flex items-center justify-center">
           <img
-            src={
-              image
-                ? URL.createObjectURL(image)
-                : existingImageURL || '/placeholder.png'
-            }
+            src={image ? URL.createObjectURL(image) : existingImageURL || '/upload_area.svg'}
             alt="Thumbnail"
-            className="mt-2 h-16 rounded cursor-pointer"
-          />
-          <input
-            type="file"
-            onChange={(e) => setImage(e.target.files[0])}
-            id="image"
-            hidden
-            required={!id}
+            className="object-cover w-full h-full"
           />
         </label>
-
-        <p className="mt-4">Blog Title</p>
         <input
-          type="text"
-          required
-          placeholder="Type here"
-          className="w-full max-w-lg mt-2 p-2 border border-gray-300 outline-none rounded"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          type="file"
+          id="image"
+          hidden
+          onChange={(e) => setImage(e.target.files[0])}
+          required={!id}
         />
-
-        <p className="mt-4">Sub Title</p>
-        <input
-          type="text"
-          required
-          placeholder="Type here"
-          className="w-full max-w-lg mt-2 p-2 border border-gray-300 outline-none rounded"
-          value={subTitle}
-          onChange={(e) => setSubTitle(e.target.value)}
-        />
-
-        <p className="mt-4">Description</p>
-        <div className="max-w-lg h-72 pb-16 pt-2 relative">
-          <div ref={editorRef}></div>
-        </div>
-
-        <p className="mt-4">Category</p>
-        <select
-          required
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="mt-2 px-3 py-2 border text-gray-500 border-gray-300 outline-none rounded"
-        >
-          <option value="">Select Category</option>
-          {blogCategories.map((item, i) => (
-            <option key={i} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-
-        <div className="flex gap-2 mt-4 items-center">
-          <p>Publish Now</p>
-          <input
-            type="checkbox"
-            checked={isPublished}
-            onChange={(e) => setIsPublished(e.target.checked)}
-            className="scale-125 cursor-pointer"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSaving || isLoading}
-          className="mt-8 w-40 h-10 bg-primary text-black rounded cursor-pointer text-sm"
-        >
-          {isSaving ? (id ? 'Updating...' : 'Adding...') : id ? 'Update Blog' : 'Add Blog'}
-        </button>
       </div>
-    </form>
+    </div>
+
+    {/* Title */}
+    <div>
+      <label className="block text-sm font-medium mb-1">Blog Title</label>
+      <input
+        type="text"
+        required
+        placeholder="Enter blog title"
+        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+    </div>
+
+    {/* Subtitle */}
+    <div>
+      <label className="block text-sm font-medium mb-1">Sub Title</label>
+      <input
+        type="text"
+        required
+        placeholder="Enter subtitle"
+        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+        value={subTitle}
+        onChange={(e) => setSubTitle(e.target.value)}
+      />
+    </div>
+
+    {/* Description */}
+    <div>
+      <label className="block text-sm font-medium mb-1">Description</label>
+      <div className="h-72 border border-gray-300 rounded-lg overflow-hidden">
+        <div ref={editorRef} className="h-full px-2 pt-2 bg-white" />
+      </div>
+    </div>
+
+    {/* Category */}
+    <div>
+      <label className="block text-sm font-medium mb-1">Category</label>
+      <select
+        required
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 "
+      >
+        <option value="">Select a category</option>
+        {blogCategories.map((cat, idx) => (
+          <option key={idx} value={cat}>{cat}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* Publish Checkbox */}
+    <div className="flex items-center gap-3">
+      <input
+        type="checkbox"
+        checked={isPublished}
+        onChange={(e) => setIsPublished(e.target.checked)}
+        className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+      />
+      <label className="text-sm font-medium">Publish Now</label>
+    </div>
+
+    {/* Submit Button */}
+    <div>
+      <button
+        type="submit"
+        disabled={isSaving || isLoading}
+        className={`w-full py-3 rounded-lg text-white text-sm font-medium transition ${
+          isSaving || isLoading
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
+        }`}
+      >
+        {isSaving ? (id ? 'Updating...' : 'Adding...') : id ? 'Update Blog' : 'Add Blog'}
+      </button>
+    </div>
+  </div>
+</form>
+
   )
 }
 
