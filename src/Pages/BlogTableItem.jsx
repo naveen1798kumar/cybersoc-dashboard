@@ -16,7 +16,7 @@ const BlogTableItem = ({ blog, index, fetchBlogs }) => {
     if (!confirmDelete) return;
 
     try {
-      const { data } = await axios.post('/blogs/delete', { id: blog._id });
+      const { data } = await axios.delete(`/blogs/${blog._id}`);
       if (data.success) {
         toast.success(data.message);
         await fetchBlogs();

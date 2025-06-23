@@ -13,7 +13,7 @@ const AdminBlogs = () => {
     try {
       const { data } = await axios.get('/blogs/all');
       if (data.success) {
-        setBlogs(data.blogs);
+        setBlogs([...data.blogs]);
       } else {
         toast.error(data.message);
       }
