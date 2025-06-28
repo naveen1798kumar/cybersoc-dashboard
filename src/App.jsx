@@ -8,6 +8,8 @@ import AdminLayout from './Layout/AdminLayout';
 import AdminDashboard from './AdminDashboard';
 import AdminServices from './Pages/AdminServices';
 import AdminBlogs from './Pages/AdminBlogs';
+import AdminCareers from './Pages/AdminCareers';
+import JobApplications from './Pages/JobApplications';
 import AdminProducts from './pages/AdminProducts';
 import AdminSettings from './pages/AdminSettings';
 import EditBlog from './Pages/EditBlog';
@@ -50,6 +52,9 @@ function App() {
           <Route path="services/edit/:serviceId" element={<EditServicePage />} />
           <Route path="blogs" element={<AdminBlogs />} />
           <Route path="blogs/:id" element={<BlogView />} />
+          <Route path="careers" element={<AdminCareers />} />
+          <Route path="careers/:jobId/applications" element={<JobApplications />} />
+
 
           <Route path="blogs/add" element={<EditBlog isNew={true} />} />
           <Route path="blogs/edit/:id" element={<EditBlog />} />

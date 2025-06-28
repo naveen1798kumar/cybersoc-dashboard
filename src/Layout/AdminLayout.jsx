@@ -9,7 +9,7 @@ const AdminLayout = () => {
         <h1 className='text-gray-900 font-extrabold text-3xl text-center'>CyberSoc Solutions</h1>
         <h2 className="text-2xl font-bold mb-10 text-center">Admin Panel</h2>
         <nav className="flex flex-col space-y-4">
-          {['dashboard', 'services', 'blogs', 'products', 'settings'].map((item) => (
+          {['dashboard', 'services', 'blogs', 'careers', 'products', 'settings'].map((item) => (
             <NavLink
               key={item}
               to={item === 'dashboard' ? '.' : item}
