@@ -1,97 +1,103 @@
+// src/pages/EditServicePage.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import servicesData from '../data/servicesData';
-import ServiceForm from '../components/adminComponents/ServiceForm';
+import axios from 'axios';
 
 const EditServicePage = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();
-  const [categoryId, setCategoryId] = useState(null);
   const [service, setService] = useState(null);
-  const [categoryTitle, setCategoryTitle] = useState('');
-  const [updatedCategoryTitle, setUpdatedCategoryTitle] = useState('');
-  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({});
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    let foundService = null;
-    let categoryData = null;
-  
-    console.log("Services Data:", servicesData); // Log the entire data
-    console.log("Looking for service with ID:", serviceId); // Log the serviceId
-  
-    for (const [category, data] of Object.entries(servicesData)) {
-      const match = data.services.find((srv) => srv.id === serviceId);
-      if (match) {
-        foundService = match;
-        categoryData = data;
-        setCategoryId(category);
-        break;
-      }
-    }
-  
-    if (foundService) {
-      setService(foundService);
-      setCategoryTitle(categoryData.title);
-      setUpdatedCategoryTitle(categoryData.title);
-      setServices(categoryData.services);
-    } else {
-      console.error("Service not found for ID:", serviceId);
-    }
-
-    
+    axios.get(`/api/services/${serviceId}`)
+      .then(res => {
+        setService(res.data);
+        setForm(res.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        alert("Failed to load service");
+      });
   }, [serviceId]);
 
-
-  
-
-  const handleCategoryTitleChange = (e) => {
-    setUpdatedCategoryTitle(e.target.value); // Update category title while editing
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (updatedData) => {
-    // You can integrate API or local state update here for services and category
-    console.log("Updated Category Title:", updatedCategoryTitle);
-    console.log("Updated Service Data:", updatedData);
-    navigate("/admin/services"); // Redirect after saving
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('fileName', file.name);
+    try {
+      const res = await fetch('/api/upload/service', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        setForm(prev => ({ ...prev, image: data.url }));
+      }
+    } catch (err) {
+      alert("Image upload failed");
+    }
+    setUploading(false);
   };
 
-  if (!service || !categoryId) return <div>Loading service data...</div>;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`/api/services/${serviceId}`, form);
+      alert("Service updated successfully!");
+      navigate('/dashboard/services');
+    } catch (err) {
+      alert("Failed to update service");
+    }
+  };
+
+  if (loading) return <div className="p-6 text-center">Loading...</div>;
+  if (!service) return <div className="p-6 text-center text-red-500">Service not found</div>;
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">Edit Service</h2>
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">Category Title</label>
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Edit Service: {service.title}</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
-          type="text"
-          value={updatedCategoryTitle}
-          onChange={handleCategoryTitleChange}
-          className="p-2 border border-gray-300 rounded w-full"
+          name="title"
+          value={form.title || ''}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          placeholder="Service Title"
+          required
         />
-      </div>
+        <textarea
+          name="description"
+          value={form.description || ''}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          placeholder="Service Description"
+          rows={4}
+        />
+        <div>
+          <label className="block mb-1 font-medium">Upload Image</label>
+          <input type="file" accept="image/*" onChange={handleImageUpload} />
+          {uploading && <p className="text-sm text-blue-600 mt-1">Uploading...</p>}
+          {form.image && <img src={form.image} alt="preview" className="mt-2 w-full max-w-sm rounded" />}
+        </div>
 
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold">Services in {categoryTitle}</h3>
-        <ul className="space-y-2">
-          {services.map((srv) => (
-            <li key={srv.id}>
-              <div className="flex justify-between items-center">
-                <span>{srv.name}</span>
-                <button
-                  className="text-blue-500"
-                  onClick={() => setService(srv)} // Set the service to be edited
-                >
-                  Edit
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {service && (
-        <ServiceForm initialData={service} onSubmit={handleSubmit} />
-      )}
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+        >
+          Save Changes
+        </button>
+      </form>
     </div>
   );
 };

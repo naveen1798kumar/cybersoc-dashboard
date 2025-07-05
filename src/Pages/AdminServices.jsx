@@ -12,14 +12,12 @@ const AdminServices = () => {
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showServiceForm, setShowServiceForm] = useState(false);
 
-  // Fetch categories
   useEffect(() => {
     axios.get(`${API_BASE}/categories`).then(res => {
       setCategories(Array.isArray(res.data) ? res.data : res.data.categories || []);
     });
   }, []);
 
-  // Fetch services for selected category
   useEffect(() => {
     if (selectedCategory) {
       axios.get(`${API_BASE}/services?category=${selectedCategory._id}`)
@@ -29,17 +27,18 @@ const AdminServices = () => {
     }
   }, [selectedCategory]);
 
-  // Category CRUD
   const handleAddCategory = async (data) => {
     const res = await axios.post(`${API_BASE}/categories`, data);
     setCategories([...categories, res.data]);
     setShowCategoryForm(false);
   };
+
   const handleEditCategory = async (id, data) => {
     const res = await axios.put(`${API_BASE}/categories/${id}`, data);
     setCategories(categories.map(cat => cat._id === id ? res.data : cat));
     setShowCategoryForm(false);
   };
+
   const handleDeleteCategory = async (id) => {
     if (window.confirm('Delete this category?')) {
       await axios.delete(`${API_BASE}/categories/${id}`);
@@ -49,17 +48,18 @@ const AdminServices = () => {
     }
   };
 
-  // Service CRUD
   const handleAddService = async (data) => {
     const res = await axios.post(`${API_BASE}/services`, { ...data, category: selectedCategory._id });
     setServices([...services, res.data]);
     setShowServiceForm(false);
   };
+
   const handleEditService = async (id, data) => {
     const res = await axios.put(`${API_BASE}/services/${id}`, data);
     setServices(services.map(srv => srv._id === id ? res.data : srv));
     setShowServiceForm(false);
   };
+
   const handleDeleteService = async (id) => {
     if (window.confirm('Delete this service?')) {
       await axios.delete(`${API_BASE}/services/${id}`);
@@ -71,7 +71,6 @@ const AdminServices = () => {
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Admin: Service Categories & Services</h1>
 
-      {/* --- Category Section --- */}
       <section className="mb-10">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-semibold">Service Categories</h2>
@@ -82,28 +81,34 @@ const AdminServices = () => {
             Add Category
           </button>
         </div>
-        <ul className="divide-y">
-          {Array.isArray(categories) && categories.map(cat => (
-            <li key={cat._id} className="flex justify-between items-center py-2">
-              <span
-                className={`cursor-pointer ${selectedCategory && selectedCategory._id === cat._id ? 'font-bold text-blue-700' : ''}`}
-                onClick={() => { setSelectedCategory(cat); setShowServiceForm(false); setSelectedService(null); }}
-              >
-                {cat.title}
-              </span>
-              <div className="flex gap-2">
-                <button
-                  className="text-blue-600"
-                  onClick={() => { setShowCategoryForm(true); setSelectedCategory(cat); }}
-                >Edit</button>
-                <button
-                  className="text-red-600"
-                  onClick={() => handleDeleteCategory(cat._id)}
-                >Delete</button>
-              </div>
-            </li>
-          ))}
-        </ul>
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+  {Array.isArray(categories) && categories.map(cat => (
+    <div
+      key={cat._id}
+      className={`bg-white p-4 rounded-lg shadow border hover:shadow-md transition cursor-pointer ${
+        selectedCategory && selectedCategory._id === cat._id ? 'ring-2 ring-blue-500' : ''
+      }`}
+      onClick={() => { setSelectedCategory(cat); setShowServiceForm(false); setSelectedService(null); }}
+    >
+      {/* {cat.image && (
+        <img src={cat.image} alt={cat.title} className="w-full h-40 object-cover rounded mb-3" />
+      )} */}
+      <h3 className="text-lg font-semibold text-blue-800">{cat.title}</h3>
+      <p className="text-sm text-gray-600">{cat.description?.slice(0, 80)}...</p>
+      <div className="flex justify-end mt-3 gap-2">
+        <button
+          className="text-blue-600"
+          onClick={(e) => { e.stopPropagation(); setShowCategoryForm(true); setSelectedCategory(cat); }}
+        >Edit</button>
+        <button
+          className="text-red-600"
+          onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat._id); }}
+        >Delete</button>
+      </div>
+    </div>
+  ))}
+</div>
+
         {showCategoryForm && (
           <CategoryForm
             initialData={selectedCategory}
@@ -113,7 +118,6 @@ const AdminServices = () => {
         )}
       </section>
 
-      {/* --- Service Section --- */}
       {selectedCategory ? (
         <section>
           <div className="flex justify-between items-center mb-2">
@@ -127,35 +131,62 @@ const AdminServices = () => {
               Add Service
             </button>
           </div>
-          <ul className="divide-y">
-            {services.map(srv => (
-              <li key={srv._id} className="flex justify-between items-center py-2">
-                <span
-                  className={`cursor-pointer ${selectedService && selectedService._id === srv._id ? 'font-bold text-green-700' : ''}`}
-                  onClick={() => { setSelectedService(srv); setShowServiceForm(false); }}
-                >
-                  <Link to={`/dashboard/services/${srv._id}`} className="text-blue-700 hover:underline">
-                    {srv.title}
-                  </Link>
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    className="text-blue-600"
-                    onClick={() => { setShowServiceForm(true); setSelectedService(srv); }}
-                  >Edit</button>
-                  <button
-                    className="text-red-600"
-                    onClick={() => handleDeleteService(srv._id)}
-                  >Delete</button>
-                </div>
-              </li>
-            ))}
-          </ul>
+<ul className="space-y-4 mt-4">
+  {services.map((srv) => (
+    <li
+      key={srv._id}
+      className={`flex items-start gap-4 p-4 bg-white rounded-lg shadow hover:shadow-md transition relative ${
+        selectedService && selectedService._id === srv._id ? 'ring-2 ring-green-500' : ''
+      }`}
+      onClick={() => { setSelectedService(srv); setShowServiceForm(false); }}
+    >
+      {srv.image && (
+        <img
+          src={srv.image}
+          alt={srv.title}
+          className="w-20 h-20 object-cover rounded border"
+        />
+      )}
+      <div className="flex-1">
+        <h3 className="text-lg font-semibold text-green-700">
+          <Link to={`/dashboard/services/${srv._id}`} className="hover:underline">
+            {srv.title}
+          </Link>
+        </h3>
+        <p className="text-sm text-gray-600 mt-1 line-clamp-2">{srv.description}</p>
+        <div className="flex gap-4 mt-2">
+          <button
+            className="text-blue-600 text-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowServiceForm(true);
+              setSelectedService(srv);
+            }}
+          >
+            Edit
+          </button>
+          <button
+            className="text-red-600 text-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteService(srv._id);
+            }}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </li>
+  ))}
+</ul>
+
+          
           {showServiceForm && (
             <ServiceForm
               initialData={selectedService}
               onSubmit={selectedService ? (data) => handleEditService(selectedService._id, data) : handleAddService}
               onCancel={() => setShowServiceForm(false)}
+              uploadEndpoint="/api/upload/service"
             />
           )}
         </section>
@@ -176,8 +207,43 @@ function CategoryForm({ initialData = {}, onSubmit, onCancel }) {
     description: safeData.description || '',
     image: safeData.image || '',
   });
+  const [uploading, setUploading] = useState(false);
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("fileName", file.name);
+    // formData.append("publicKey", "public_u/u4AIvv/bZDMQSMQElbtxOFIkw="); // Replace with your key
+    // formData.append("uploadPreset", "default"); // Optional if your account requires it
+
+    try {
+      const res = await fetch('/api/upload/image/service', {
+        method: "POST",
+        // headers: {
+        //   Authorization: "Basic " + btoa("your_imagekit_private_api_key:"), // Replace with your ImageKit private key
+        // },
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        setForm(prev => ({ ...prev, image: data.url }));
+      } else {
+        alert("Image upload failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("ImageKit upload error");
+    }
+
+    setUploading(false);
+  };
+
 
   return (
     <form
@@ -199,13 +265,17 @@ function CategoryForm({ initialData = {}, onSubmit, onCancel }) {
         placeholder="Description"
         className="w-full border px-3 py-2 rounded"
       />
-      <input
-        name="image"
-        value={form.image}
-        onChange={handleChange}
-        placeholder="Image URL"
-        className="w-full border px-3 py-2 rounded"
-      />
+      <div>
+        <label className="font-semibold">Upload Image</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="block mb-2"
+        />
+        {uploading && <p className="text-blue-500">Uploading...</p>}
+        {form.image && <img src={form.image} alt="Preview" className="h-24 mt-2 rounded shadow" />}
+      </div>
       <div className="flex gap-2 justify-end">
         <button type="button" onClick={onCancel} className="px-4 py-2 border rounded">Cancel</button>
         <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
@@ -249,24 +319,30 @@ function ServiceForm({ initialData, onSubmit, onCancel }) {
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('image', file);
-    try {
-      const res = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
+const handleImageUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  setUploading(true);
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('fileName', file.name);
+  try {
+    const res = await fetch('/api/upload/image/service', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json();
+    if (data.url) {
       setForm(prev => ({ ...prev, image: data.url }));
-    } catch (err) {
-      alert('Image upload failed');
+    } else {
+      alert("Image upload failed");
     }
-    setUploading(false);
-  };
+  } catch (err) {
+    alert("Upload error");
+  }
+  setUploading(false);
+};
+
 
   return (
     <form
@@ -288,13 +364,16 @@ function ServiceForm({ initialData, onSubmit, onCancel }) {
         placeholder="Description"
         className="w-full border px-3 py-2 rounded"
       />
-      <input
+      {/* <input
         name="image"
         value={form.image}
         onChange={handleChange}
         placeholder="Image URL"
         className="w-full border px-3 py-2 rounded"
-      />
+      /> */}
+      {form.image && (
+        <img src={form.image} alt="Preview" className="h-24 mt-2 rounded shadow" />
+      )}
       <div>
         <label className="font-semibold">Image</label>
         <input
