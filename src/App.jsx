@@ -55,7 +55,6 @@ function App() {
           <Route path="careers" element={<AdminCareers />} />
           <Route path="careers/:jobId/applications" element={<JobApplications />} />
 
-
           <Route path="blogs/add" element={<EditBlog isNew={true} />} />
           <Route path="blogs/edit/:id" element={<EditBlog />} />
           <Route path="products" element={<AdminProducts />} />
