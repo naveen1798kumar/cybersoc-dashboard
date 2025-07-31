@@ -17,12 +17,12 @@ const ServiceDetail = () => {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen py-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-        {/* Header & Image */}
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        {/* Banner Image & Title */}
         <div className="relative">
-          {service.image && (
+          {service.bannerImage && (
             <img
-              src={service.image}
+              src={service.bannerImage}
               alt={service.title}
               className="w-full h-64 object-cover"
             />
@@ -32,15 +32,15 @@ const ServiceDetail = () => {
             className="absolute top-4 left-4 bg-white/80 hover:bg-white text-blue-700 px-4 py-2 rounded shadow font-semibold transition"
             type="button"
           >
-            &larr; Back to Services
+            &larr; Back
           </button>
           <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/60 to-transparent px-8 py-6">
             <h1 className="text-3xl md:text-4xl font-extrabold text-white drop-shadow">{service.title}</h1>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="p-8 space-y-8">
+        {/* Content */}
+        <div className="p-8 space-y-10">
           {/* Description */}
           <p className="text-lg text-gray-700">{service.description}</p>
 
@@ -50,9 +50,12 @@ const ServiceDetail = () => {
               <h2 className="text-2xl font-bold text-blue-700 mb-4">Details</h2>
               <div className="space-y-4">
                 {service.sections.map((sec, idx) => (
-                  <div key={idx}>
+                  <div key={idx} className="space-y-2">
                     <h3 className="text-lg font-semibold text-gray-800">{sec.title}</h3>
                     <p className="text-gray-600">{sec.content}</p>
+                    {sec.image && (
+                      <img src={sec.image} alt={sec.title} className="w-full max-h-64 object-cover rounded" />
+                    )}
                   </div>
                 ))}
               </div>
@@ -63,11 +66,16 @@ const ServiceDetail = () => {
           {service.benefits?.length > 0 && (
             <div>
               <h2 className="text-2xl font-bold text-blue-700 mb-4">Key Benefits</h2>
-              <ul className="list-disc list-inside space-y-2 text-gray-700">
-                {service.benefits.map((b, idx) => (
-                  <li key={idx}>{b}</li>
-                ))}
-              </ul>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  {service.benefits.map((b, idx) => (
+                    <li key={idx}>{b}</li>
+                  ))}
+                </ul>
+                {service.benefitsImage && (
+                  <img src={service.benefitsImage} alt="Benefits" className="w-full rounded shadow" />
+                )}
+              </div>
             </div>
           )}
 
@@ -90,13 +98,18 @@ const ServiceDetail = () => {
           {service.faqs?.length > 0 && (
             <div>
               <h2 className="text-2xl font-bold text-blue-700 mb-4">FAQs</h2>
-              <div className="space-y-4">
-                {service.faqs.map((faq, idx) => (
-                  <div key={idx} className="bg-gray-50 rounded-lg p-4 shadow">
-                    <h5 className="font-semibold text-gray-800">Q: {faq.question}</h5>
-                    <p className="text-gray-700 mt-1">A: {faq.answer}</p>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div className="space-y-4">
+                  {service.faqs.map((faq, idx) => (
+                    <div key={idx} className="bg-gray-50 rounded-lg p-4 shadow">
+                      <h5 className="font-semibold text-gray-800">Q: {faq.question}</h5>
+                      <p className="text-gray-700 mt-1">A: {faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+                {service.faqImage && (
+                  <img src={service.faqImage} alt="FAQ Visual" className="w-full rounded shadow" />
+                )}
               </div>
             </div>
           )}
