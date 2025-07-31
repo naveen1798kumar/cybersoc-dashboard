@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000', // Proxy API requests to backend
+      '/api': 'https://cybersoc-backend.onrender.com', // Proxy API requests to backend
     },
   },
 })
