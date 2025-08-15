@@ -24,7 +24,7 @@ const AdminDashboard = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      {/* <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <button
           onClick={handleLogout}
@@ -32,7 +32,7 @@ const AdminDashboard = () => {
         >
           Logout
         </button>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {cards.map((card) => (

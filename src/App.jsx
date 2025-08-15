@@ -14,7 +14,7 @@ import AdminProducts from './pages/AdminProducts';
 import AdminSettings from './pages/AdminSettings';
 import EditBlog from './Pages/EditBlog';
 import EditServicePage from './pages/EditServicePage';
-
+import AdminServiceForm from  './Pages/AdminServiceForm';
 import BlogView from './Pages/BlogView'; 
 
 import 'slick-carousel/slick/slick.css';
@@ -47,16 +47,22 @@ function App() {
         <Route path="/" element={<AdminLogin />} />
         <Route path="/dashboard" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
+
+          {/* Ssevices */}
           <Route path="services" element={<AdminServices />} />
+          <Route path="services/add" element={<AdminServiceForm />} />
+          <Route path="services/:id/edit" element={<AdminServiceForm />} />
           <Route path="services/:id" element={<ServiceDetail />} />
           <Route path="services/edit/:serviceId" element={<EditServicePage />} />
+
           <Route path="blogs" element={<AdminBlogs />} />
           <Route path="blogs/:id" element={<BlogView />} />
+          <Route path="blogs/add" element={<EditBlog isNew={true} />} />
+          <Route path="blogs/edit/:id" element={<EditBlog />} />
+
           <Route path="careers" element={<AdminCareers />} />
           <Route path="careers/:jobId/applications" element={<JobApplications />} />
 
-          <Route path="blogs/add" element={<EditBlog isNew={true} />} />
-          <Route path="blogs/edit/:id" element={<EditBlog />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>

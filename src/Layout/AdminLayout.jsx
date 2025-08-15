@@ -1,33 +1,89 @@
-// src/pages/Admin/AdminLayout.jsx
-import React from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { FiMenu, FiHome, FiSettings, FiFileText, FiBriefcase, FiList, FiLogOut } from 'react-icons/fi';
+import Logo from '../assets/cybersoc-logo.png'
+
+const menuItems = [
+  { name: 'Dashboard', icon: <FiHome />, path: '.' },
+  { name: 'Services', icon: <FiList />, path: 'services' },
+  { name: 'Blogs', icon: <FiFileText />, path: 'blogs' },
+  { name: 'Careers', icon: <FiBriefcase />, path: 'careers' },
+  { name: 'Settings', icon: <FiSettings />, path: 'settings' }
+];
 
 const AdminLayout = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAdmin');
+    navigate('/');
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <aside className="w-64 bg-gradient-to-b from-blue-800 to-blue-600 text-white p-6 shadow-lg">
-        <h1 className='text-gray-900 font-extrabold text-3xl text-center'>CyberSoc Solutions</h1>
-        <h2 className="text-2xl font-bold mb-10 text-center">Admin Panel</h2>
+      {/* Sidebar */}
+      <aside
+        className={`transition-all duration-300 bg-black/30 backdrop-blur-xl shadow-xl p-4
+        ${isCollapsed ? 'w-20' : 'w-64'} flex flex-col`}
+      >
+        <button
+          className="text-white mb-6"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        > 
+          <FiMenu size={24} />
+        </button>
+
+        <h1
+          className={`text-2xl font-bold text-white mb-8 transition-all duration-300 
+          ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}
+        >
+          CyberSoc
+        </h1>
+
         <nav className="flex flex-col space-y-4">
-          {['dashboard', 'services', 'blogs', 'careers',  'settings'].map((item) => (
+          {menuItems.map((item) => (
             <NavLink
-              key={item}
-              to={item === 'dashboard' ? '.' : item}
-              end={item === 'dashboard'}
+              key={item.name}
+              to={item.path}
+              end={item.name === 'Dashboard'}
               className={({ isActive }) =>
-                `px-4 py-2 rounded hover:bg-blue-700 hover:text-gray-800 transition-all ${
-                  isActive ? 'bg-white text-gray-400  font-semibold' : 'text-white'
-                }`
+                `flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/30 transition-all
+                ${isActive ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' : 'text-white'}`
               }
             >
-              {item.charAt(0).toUpperCase() + item.slice(1)}
+              {item.icon}
+              {!isCollapsed && <span>{item.name}</span>}
             </NavLink>
           ))}
         </nav>
       </aside>
-      <main className="flex-1 p-8">
-        <Outlet />
-      </main>
+
+      {/* Main content area with topbar */}
+      <div className="flex flex-col flex-1">
+        {/* Top Bar */}
+        <header className="bg-white border-b-[1px] shadow-md px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <img
+              src={Logo} // Replace with your actual logo path
+              alt="CyberSoc Logo"
+              className="w-8 h-8"
+            />
+            <h2 className="text-xl font-bold text-gray-800">Admin Panel</h2>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+          >
+            <FiLogOut /> Logout
+          </button>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-8 bg-gray-50">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
