@@ -24,10 +24,16 @@ import 'aos/dist/aos.css';
 import ServiceList from './Pages/ServiceList';
 import ServiceDetail from './Pages/ServiceDetail';
 
+import AdminContactMessages from './components/contactComponents/AdminContactMessages';
+import AdminServicesDropdown from './components/contactComponents/AdminServicesDropdown';
+
+
 // 
 import 'quill/dist/quill.snow.css'
 import {Toaster} from 'react-hot-toast'
 import { useAppContext } from './context/AppContext'
+import AdminContactDashboard from './Pages/AdminContactDashboard';
+import AdminAddJob from './Pages/AdminAddJob';
 
 function App() {
   const {token} = useAppContext()
@@ -60,7 +66,12 @@ function App() {
           <Route path="blogs/add" element={<EditBlog isNew={true} />} />
           <Route path="blogs/edit/:id" element={<EditBlog />} />
 
+          {/* <Route path="contact-messages" element={<AdminContactMessages />} />
+          <Route path="services-dropdown" element={<AdminServicesDropdown />} /> */}
+          <Route path="contact-dashboard" element={<AdminContactDashboard />} />
+
           <Route path="careers" element={<AdminCareers />} />
+          <Route path="careers/add" element={<AdminAddJob />} />
           <Route path="careers/:jobId/applications" element={<JobApplications />} />
 
           <Route path="products" element={<AdminProducts />} />

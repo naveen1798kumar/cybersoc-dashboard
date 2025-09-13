@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { FiMenu, FiHome, FiSettings, FiFileText, FiBriefcase, FiList, FiLogOut } from 'react-icons/fi';
+import { FiMenu, FiHome, FiSettings, FiFileText, FiBriefcase, FiList, FiLogOut, FiMail } from 'react-icons/fi';
 import Logo from '../assets/cybersoc-logo.png'
 
 const menuItems = [
@@ -8,6 +8,7 @@ const menuItems = [
   { name: 'Services', icon: <FiList />, path: 'services' },
   { name: 'Blogs', icon: <FiFileText />, path: 'blogs' },
   { name: 'Careers', icon: <FiBriefcase />, path: 'careers' },
+  { name: 'Contact Dashboard', icon: <FiMail />, path: 'contact-dashboard' }, // ✅ Added here
   { name: 'Settings', icon: <FiSettings />, path: 'settings' }
 ];
 
